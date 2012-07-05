@@ -38,6 +38,7 @@ const MEDIAPLAYER_PLAYLISTS_KEY = 'playlists';
 const MEDIAPLAYER_COVER_SIZE = 'coversize';
 const MEDIAPLAYER_RUN_DEFAULT = 'rundefault';
 const MEDIAPLAYER_RATING_KEY = 'rating';
+const MEDIAPLAYER_PINNED_KEY = 'pinnedplayers';
 
 const FADE_ANIMATION_TIME = 0.16;
 
