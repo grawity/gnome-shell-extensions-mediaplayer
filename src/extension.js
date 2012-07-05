@@ -259,18 +259,12 @@ const Player = new Lang.Class({
         if (this._mediaServer.CanRaise) {
             this.playerTitle.connect('activate',
                 Lang.bind(this, function () {
-                    // If we have an application in the appSystem
-                    // Bring it to the front else let the player decide
-                    if (this._app)
-                        this._app.activate_full(-1, 0);
-                    else
-                        this._mediaServer.RaiseRemote();
+                    this._activate();
                     // Close the indicator
                     mediaplayerMenu.menu.close();
                 })
             );
-        }
-        else {
+        } else {
             // Make the player title insensitive
             this.playerTitle.setSensitive(false);
             this.playerTitle.actor.remove_style_pseudo_class('insensitive');
@@ -308,6 +302,15 @@ const Player = new Lang.Class({
 
             this._wantedSeekValue = 0;
         }));
+    },
+
+    _activate: function() {
+        // If we have an application in the appSystem
+        // Bring it to the front else let the player decide
+        if (this._app)
+            this._app.activate_full(-1, 0);
+        else if (this._mediaServer)
+            this._mediaServer.RaiseRemote();
     },
 
     _getIdentity: function() {
