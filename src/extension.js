@@ -144,7 +144,9 @@ const Player = new Lang.Class({
             }
         }));
         let genericIcon = new St.Icon({icon_name: "audio-x-generic", icon_size: 16, icon_type: St.IconType.SYMBOLIC});
-        this.playerTitle = new Widget.TitleItem(this._identity, genericIcon, Lang.bind(this, function() { this._mediaServer.QuitRemote(); }));
+        this.playerTitle = new Widget.TitleItem(this._identity, genericIcon,
+            Lang.bind(this, function() { this._togglePinned(); }),
+            Lang.bind(this, function() { this._mediaServer.QuitRemote(); }));
 
         this.addMenuItem(this.playerTitle);
 

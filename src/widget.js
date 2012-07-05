@@ -155,7 +155,7 @@ function TitleItem() {
 TitleItem.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-    _init: function(text, icon, callback) {
+    _init: function(text, icon, pinCallback, quitCallback) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
 
         this.box = new St.BoxLayout();
@@ -163,7 +163,7 @@ TitleItem.prototype = {
         this.label = new St.Label({text: text});
         this.icon = new St.Bin({style_class: "menu-icon", child: icon});
         this.button = new St.Button({style_class: "button-quit"});
-        this.button.connect('clicked', callback);
+        this.button.connect('clicked', quitCallback);
         this.button_icon = new St.Icon({
             icon_type: St.IconType.SYMBOLIC,
             icon_name: 'window-close',
