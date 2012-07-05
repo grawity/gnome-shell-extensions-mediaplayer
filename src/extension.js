@@ -291,6 +291,39 @@ const Player = new Lang.Class({
         }
     },
 
+    _getPinned: function() {
+        let entry = this._mediaServer.DesktopEntry;
+        if (!entry)
+            return false;
+        let players = this._settings.get_strv(MEDIAPLAYER_PINNED_KEY);
+        return players.indexOf(entry) >= 0;
+    },
+
+    _setPinned: function(pin) {
+        let entry = this._mediaServer.DesktopEntry;
+        if (!entry)
+            return;
+        let players = this._settings.get_strv(MEDIAPLAYER_PINNED_KEY);
+        let pos = players.indexOf(entry);
+        if (pin) {
+            if (pos < 0) {
+                players.push(entry);
+                this._settings.set_strv(MEDIAPLAYER_PINNED_KEY, players);
+            }
+        } else {
+            // TODO: Should we try to remove possible duplicate entries?
+            if (pos >= 0) {
+                players.splice(pos, 1);
+                this._settings.set_strv(MEDIAPLAYER_PINNED_KEY, players);
+            }
+        }
+    },
+
+    _togglePinned: function() {
+        let pinned = this._getPinned();
+        this._setPinned(!pinned);
+    },
+
     _setActivePlaylist: function(playlist) {
         // Is there an active playlist ?
         if (playlist && playlist[0]) {
