@@ -243,7 +243,7 @@ const Player = new Lang.Class({
         }
 
         if (this._mediaServer.CanQuit) {
-            this.playerTitle.showButton();
+            this.playerTitle.showQuitButton();
         }
 
         this._prop.connectSignal('PropertiesChanged', Lang.bind(this, function(proxy, sender, [iface, props]) {
@@ -290,6 +290,8 @@ const Player = new Lang.Class({
         if (this._app) {
             let icon = this._app.create_icon_texture(16);
             this.playerTitle.setIcon(icon);
+            this.playerTitle.setPinState(this._getPinned());
+            this.playerTitle.showPinButton();
         }
     },
 
@@ -312,12 +314,14 @@ const Player = new Lang.Class({
                 players.push(entry);
                 this._settings.set_strv(MEDIAPLAYER_PINNED_KEY, players);
             }
+            this.playerTitle.setPinState(true);
         } else {
             // TODO: Should we try to remove possible duplicate entries?
             if (pos >= 0) {
                 players.splice(pos, 1);
                 this._settings.set_strv(MEDIAPLAYER_PINNED_KEY, players);
             }
+            this.playerTitle.setPinState(false);
         }
     },
 

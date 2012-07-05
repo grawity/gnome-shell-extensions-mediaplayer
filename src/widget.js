@@ -162,18 +162,35 @@ TitleItem.prototype = {
         this.addActor(this.box);
         this.label = new St.Label({text: text});
         this.icon = new St.Bin({style_class: "menu-icon", child: icon});
-        this.button = new St.Button({style_class: "button-quit"});
-        this.button.connect('clicked', quitCallback);
-        this.button_icon = new St.Icon({
+        this.pinButton = new St.Button({style_class: "button-quit"});
+        this.pinButton.connect('clicked', pinCallback);
+        this.pinnedIcon = new St.Icon({
+            icon_type: St.IconType.SYMBOLIC,
+            icon_name: 'starred',
+            icon_size: 16
+        });
+        this.unpinnedIcon = new St.Icon({
+            icon_type: St.IconType.SYMBOLIC,
+            icon_name: 'non-starred',
+            icon_size: 16
+        });
+        this.pinButton.set_child(this.unpinnedIcon);
+        this.quitButton = new St.Button({style_class: "button-quit"});
+        this.quitButton.connect('clicked', quitCallback);
+        this.quitIcon = new St.Icon({
             icon_type: St.IconType.SYMBOLIC,
             icon_name: 'window-close',
             icon_size: 16
         });
-        this.button.set_child(this.button_icon);
+        this.quitButton.set_child(this.quitIcon);
         this.box.add_actor(this.icon);
         this.box.add_actor(this.label);
-        this.addActor(this.button, {span: -1, expand: true, align: St.Align.END});
-        this.hideButton();
+        // TODO: This might need some adjustments, esp. when the quit button
+        //       is invisible --grawity
+        this.addActor(this.pinButton, {span: 1, expand: true, align: St.Align.END});
+        this.addActor(this.quitButton, {span: 1, expand: true, align: St.Align.END});
+        this.hidePinButton();
+        this.hideQuitButton();
     },
     setLabel: function(text) {
         this.label.text = text;
@@ -181,11 +198,21 @@ TitleItem.prototype = {
     setIcon: function(icon) {
         this.icon.set_child(icon);
     },
-    hideButton: function() {
-        this.button.hide();
+    hideQuitButton: function() {
+        this.quitButton.hide();
     },
-    showButton: function() {
-        this.button.show();
+    showQuitButton: function() {
+        this.quitButton.show();
+    },
+    hidePinButton: function() {
+        this.pinButton.hide();
+    },
+    showPinButton: function() {
+        this.pinButton.show();
+    },
+    setPinState: function(pinned) {
+        let icon = pinned ? this.pinnedIcon : this.unpinnedIcon;
+        this.pinButton.set_child(icon);
     }
 }
 
