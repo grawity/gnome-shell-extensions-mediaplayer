@@ -247,7 +247,7 @@ const Player = new Lang.Class({
 
         this._getVolume();
         this._getIdentity();
-        this._getDesktopEntry();
+        this._getFromDesktopEntry();
         this._getMetadata();
         this._getStatus();
         this._getPosition();
@@ -258,14 +258,12 @@ const Player = new Lang.Class({
 
         if (this._mediaServer.CanRaise) {
             this.playerTitle.connect('activate',
-                Lang.bind(this, function () {
+                Lang.bind(this, function() {
                     this._activate();
-                    // Close the indicator
                     mediaplayerMenu.menu.close();
                 })
             );
         } else {
-            // Make the player title insensitive
             this.playerTitle.setSensitive(false);
             this.playerTitle.actor.remove_style_pseudo_class('insensitive');
         }
@@ -321,9 +319,17 @@ const Player = new Lang.Class({
     },
 
     _getDesktopEntry: function() {
-        this._desktopEntry = this._mediaServer.DesktopEntry;
-        let appSys = Shell.AppSystem.get_default();
-        this._app = appSys.lookup_app(this._desktopEntry + ".desktop");
+        if (!this._desktopEntry && this._mediaServer)
+            this._desktopEntry = this._mediaServer.DesktopEntry;
+        return this._desktopEntry;
+    },
+
+    _getFromDesktopEntry: function() {
+        if (!this._app) {
+            let entry = this._getDesktopEntry();
+            let appSys = Shell.AppSystem.get_default();
+            this._app = appSys.lookup_app(entry + ".desktop");
+        }
         if (this._app) {
             let icon = this._app.create_icon_texture(16);
             this.playerTitle.setIcon(icon);
@@ -333,7 +339,7 @@ const Player = new Lang.Class({
     },
 
     _getPinned: function() {
-        let entry = this._mediaServer.DesktopEntry;
+        let entry = this._getDesktopEntry();
         if (!entry)
             return false;
         let players = this._settings.get_strv(MEDIAPLAYER_PINNED_KEY);
@@ -341,7 +347,7 @@ const Player = new Lang.Class({
     },
 
     _setPinned: function(pin) {
-        let entry = this._mediaServer.DesktopEntry;
+        let entry = this._getDesktopEntry();
         if (!entry)
             return;
         let players = this._settings.get_strv(MEDIAPLAYER_PINNED_KEY);
