@@ -65,17 +65,47 @@ const Player = new Lang.Class({
     Name: 'Player',
     Extends: PopupMenu.PopupMenuSection,
 
-    _init: function(busName, owner) {
+    _init: function(busName, owner, desktopEntry) {
         this.parent();
-
-        let baseName = busName.split('.')[3];
 
         this._owner = owner;
         this._busName = busName;
-        this._app = "";
+        this._desktopEntry = desktopEntry;
+
+        this._app = null;
+        this._identity = "";
+        this._icon = null;
+        this._settings = settings;
+
+        if (busName)
+            this._initRunning();
+        else if (desktopEntry)
+            this._initPlaceholder();
+        else
+            ; // TODO: die horribly
+    },
+
+    _initPlaceholder: function() {
+        let appSys = Shell.AppSystem.get_default();
+        this._app = appSys.lookup_app(entry+".desktop");
+        this._identity = this._app.get_name();
+        this._icon = this._app.create_icon_texture(16);
+        // TODO TODO TODO TODO
+        this.playerTitle = new Widget.TitleItem(this._identity,
+            this._icon,
+            Lang.bind(this, function() { this._setPinned(false); }),
+            Lang.bind(this, function() { }));
+        this.playerTitle.setPinState(true);
+        this.playerTitle.showPinButton();
+        this.addMenuItem(this.playerTitle);
+        // TODO TODO TODO TODO
+    },
+
+    _initRunning: function() {
         this._status = "";
         // Guess the name based on the dbus path
         // Should be overriden by the Identity property
+        let baseName = this._busName.split('.')[3];
         this._identity = baseName.charAt(0).toUpperCase() + baseName.slice(1);
         this._playlists = "";
         this._playlistsMenu = "";
@@ -83,11 +113,10 @@ const Player = new Lang.Class({
         this._currentTime = -1;
         this._wantedSeekValue = 0;
         this._timeoutId = 0;
-        this._mediaServer = new DBusIface.MediaServer2(busName);
-        this._mediaServerPlayer = new DBusIface.MediaServer2Player(busName);
-        this._mediaServerPlaylists = new DBusIface.MediaServer2Playlists(busName);
-        this._prop = new DBusIface.Properties(busName);
-        this._settings = settings;
+        this._mediaServer = new DBusIface.MediaServer2(this._busName);
+        this._mediaServerPlayer = new DBusIface.MediaServer2Player(this._busName);
+        this._mediaServerPlaylists = new DBusIface.MediaServer2Playlists(this._busName);
+        this._prop = new DBusIface.Properties(this._busName);
 
         this.showVolume = this._settings.get_boolean(MEDIAPLAYER_VOLUME_KEY);
         this._settings.connect("changed::" + MEDIAPLAYER_VOLUME_KEY, Lang.bind(this, function() {
@@ -143,11 +172,16 @@ const Player = new Lang.Class({
                 this.trackRating.destroy();
             }
         }));
-        let genericIcon = new St.Icon({icon_name: "audio-x-generic", icon_size: 16, icon_type: St.IconType.SYMBOLIC});
-        this.playerTitle = new Widget.TitleItem(this._identity, genericIcon,
+
+        let genericIcon = new St.Icon({
+            icon_name: "audio-x-generic",
+            icon_size: 16,
+            icon_type: St.IconType.SYMBOLIC
+        });
+        this.playerTitle = new Widget.TitleItem(this._identity,
+            genericIcon,
             Lang.bind(this, function() { this._togglePinned(); }),
             Lang.bind(this, function() { this._mediaServer.QuitRemote(); }));
-
         this.addMenuItem(this.playerTitle);
 
         this.trackCoverContainer = new St.Button({style_class: 'track-cover-container', x_align: St.Align.START, y_align: St.Align.START});
@@ -284,9 +318,9 @@ const Player = new Lang.Class({
     },
 
     _getDesktopEntry: function() {
-        let entry = this._mediaServer.DesktopEntry;
+        this._desktopEntry = this._mediaServer.DesktopEntry;
         let appSys = Shell.AppSystem.get_default();
-        this._app = appSys.lookup_app(entry+".desktop");
+        this._app = appSys.lookup_app(this._desktopEntry + ".desktop");
         if (this._app) {
             let icon = this._app.create_icon_texture(16);
             this.playerTitle.setIcon(icon);
@@ -773,7 +807,7 @@ const PlayerManager = new Lang.Class({
             else
                 return;
         } else if (owner) {
-            this._players[owner] = {player: new Player(busName, owner)};
+            this._players[owner] = {player: new Player(busName, owner, null)};
             this._players[owner].signal = this._players[owner].player.connect('status-changed',
                 Lang.bind(this, this._statusChanged));
             if (settings.get_boolean(MEDIAPLAYER_VOLUME_MENU_KEY))
